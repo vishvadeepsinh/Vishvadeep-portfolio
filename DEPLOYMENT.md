@@ -125,7 +125,7 @@ To use a custom domain:
 - Next.js Docs: https://nextjs.org/docs
 \`\`\`
 
-```env.example file=".env.example"
+\`\`\`env.example file=".env.example"
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
