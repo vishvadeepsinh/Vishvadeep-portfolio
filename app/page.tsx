@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Code2, Palette, BarChart3 } from "lucide-react"
 import { useState, useEffect } from "react"
+import Image from "next/image"
 
 export default function Home() {
   const [profileImage, setProfileImage] = useState<string>("")
@@ -16,7 +17,7 @@ export default function Home() {
     const fetchProfile = async () => {
       try {
         const response = await fetch("/api/admin/profile", {
-          cache: "no-store",
+          next: { revalidate: 60 },
         })
         const result = await response.json()
 
@@ -50,7 +51,6 @@ export default function Home() {
               </h1>
               <p className="text-lg text-foreground/70 mb-8 text-balance">{profile?.title || "Loading..."}</p>
               <p className="text-base text-foreground/60 mb-8 max-w-lg">{profile?.bio || "Loading..."}</p>
-              {/* </CHANGE> */}
               <div className="flex gap-4">
                 <Link href="/projects">
                   <Button size="lg">
@@ -67,11 +67,14 @@ export default function Home() {
             </div>
             <div className="hidden md:block">
               {profileImage ? (
-                <div className="w-full aspect-square rounded-lg overflow-hidden shadow-lg bg-muted/30 flex items-center justify-center">
-                  <img
+                <div className="w-full aspect-square rounded-lg overflow-hidden shadow-lg bg-muted/30 relative">
+                  <Image
                     src={profileImage || "/placeholder.svg"}
-                    alt="Vishvadeepsinh"
-                    className="max-w-full max-h-full object-contain"
+                    alt={profile?.name || "Profile"}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-contain"
+                    priority
                   />
                 </div>
               ) : (

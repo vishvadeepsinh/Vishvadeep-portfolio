@@ -1,34 +1,26 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useCachedFetch } from "@/hooks/use-cached-fetch"
+import { perfMonitor } from "@/lib/performance"
 
 export default function AboutPage() {
-  const [about, setAbout] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: about, loading } = useCachedFetch<any>("/api/admin/about", {
+    cacheKey: "about",
+    cacheTTL: 300000, // 5 minutes
+  })
 
   useEffect(() => {
-    fetchAbout()
-  }, [])
-
-  const fetchAbout = async () => {
-    try {
-      const response = await fetch("/api/admin/about", { cache: "no-store" })
-      const result = await response.json()
-
-      if (result.data) {
-        setAbout(result.data)
-      }
-    } catch (error) {
-      console.error("[v0] Failed to fetch about:", error)
-    } finally {
-      setLoading(false)
+    perfMonitor.startMeasure("about-page-render")
+    return () => {
+      perfMonitor.endMeasure("about-page-render")
     }
-  }
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col">

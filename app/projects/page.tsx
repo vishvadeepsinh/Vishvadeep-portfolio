@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
@@ -8,7 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ExternalLink, Code } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useCachedFetch } from "@/hooks/use-cached-fetch"
+import { perfMonitor } from "@/lib/performance"
+import { useEffect } from "react"
 
 interface Project {
   id: number
@@ -22,36 +25,24 @@ interface Project {
 }
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: projects, loading } = useCachedFetch<Project[]>("/api/admin/projects", {
+    cacheKey: "projects",
+    cacheTTL: 300000, // 5 minutes
+  })
 
   useEffect(() => {
-    fetchProjects()
-  }, [])
-
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch("/api/admin/projects")
-      const data = await response.json()
-
-      if (data.success) {
-        setProjects(data.data || [])
-      }
-    } catch (error) {
-      console.error("[v0] Failed to fetch projects:", error)
-    } finally {
-      setLoading(false)
+    perfMonitor.startMeasure("projects-page-render")
+    return () => {
+      perfMonitor.endMeasure("projects-page-render")
     }
-  }
+  }, [])
 
   const simplifyUrl = (url: string): string => {
     if (!url) return url
     try {
       const urlObj = new URL(url)
-      // Return only the base URL without query parameters or hash
       return `${urlObj.origin}${urlObj.pathname}`
     } catch {
-      // If URL parsing fails, return original URL
       return url
     }
   }
@@ -86,20 +77,24 @@ export default function ProjectsPage() {
                 </Card>
               ))}
             </div>
-          ) : projects.length === 0 ? (
+          ) : !projects || projects.length === 0 ? (
             <Card className="p-12 text-center">
               <p className="text-foreground/60">No projects found. Add some from the admin dashboard!</p>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {projects.map((project) => (
+              {projects.map((project, index) => (
                 <Card key={project.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
                   {project.image_url ? (
-                    <div className="aspect-square overflow-hidden bg-muted">
-                      <img
+                    <div className="aspect-square overflow-hidden bg-muted relative">
+                      <Image
                         src={project.image_url || "/placeholder.svg"}
                         alt={project.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover"
+                        loading={index < 2 ? "eager" : "lazy"}
+                        priority={index < 2}
                       />
                     </div>
                   ) : (

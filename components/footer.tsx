@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Github, Linkedin, Mail, Twitter } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 
 export function Footer() {
   const [profile, setProfile] = useState<any>(null)
@@ -11,7 +11,7 @@ export function Footer() {
     const fetchProfile = async () => {
       try {
         const response = await fetch("/api/admin/profile", {
-          cache: "no-store",
+          next: { revalidate: 60 },
         })
         const result = await response.json()
         if (result.success && result.data) {
@@ -23,6 +23,25 @@ export function Footer() {
     }
     fetchProfile()
   }, [])
+
+  const socialLinks = useMemo(() => {
+    if (!profile) return []
+
+    const links = []
+    if (profile.github_url) {
+      links.push({ href: profile.github_url, icon: Github, label: "GitHub" })
+    }
+    if (profile.linkedin_url) {
+      links.push({ href: profile.linkedin_url, icon: Linkedin, label: "LinkedIn" })
+    }
+    if (profile.twitter_url) {
+      links.push({ href: profile.twitter_url, icon: Twitter, label: "Twitter" })
+    }
+    if (profile.email) {
+      links.push({ href: `mailto:${profile.email}`, icon: Mail, label: "Email" })
+    }
+    return links
+  }, [profile])
 
   return (
     <footer className="border-t border-border bg-muted/30 py-12">
@@ -57,48 +76,18 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Connect</h4>
             <div className="flex gap-4">
-              {profile?.github_url && (
+              {socialLinks.map(({ href, icon: Icon, label }) => (
                 <a
-                  href={profile.github_url}
+                  key={label}
+                  href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground/70 hover:text-foreground transition-colors"
-                  aria-label="GitHub"
+                  aria-label={label}
                 >
-                  <Github size={20} />
+                  <Icon size={20} />
                 </a>
-              )}
-              {profile?.linkedin_url && (
-                <a
-                  href={profile.linkedin_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground/70 hover:text-foreground transition-colors"
-                  aria-label="LinkedIn"
-                >
-                  <Linkedin size={20} />
-                </a>
-              )}
-              {profile?.twitter_url && (
-                <a
-                  href={profile.twitter_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground/70 hover:text-foreground transition-colors"
-                  aria-label="Twitter"
-                >
-                  <Twitter size={20} />
-                </a>
-              )}
-              {profile?.email && (
-                <a
-                  href={`mailto:${profile.email}`}
-                  className="text-foreground/70 hover:text-foreground transition-colors"
-                  aria-label="Email"
-                >
-                  <Mail size={20} />
-                </a>
-              )}
+              ))}
             </div>
           </div>
         </div>

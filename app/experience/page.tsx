@@ -1,11 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useCachedFetch } from "@/hooks/use-cached-fetch"
+import { perfMonitor } from "@/lib/performance"
+import { useEffect } from "react"
 
 interface Experience {
   id: number
@@ -18,27 +20,17 @@ interface Experience {
 }
 
 export default function ExperiencePage() {
-  const [experiences, setExperiences] = useState<Experience[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: experiences, loading } = useCachedFetch<Experience[]>("/api/admin/experience", {
+    cacheKey: "experience",
+    cacheTTL: 300000, // 5 minutes
+  })
 
   useEffect(() => {
-    fetchExperiences()
-  }, [])
-
-  const fetchExperiences = async () => {
-    try {
-      const response = await fetch("/api/admin/experience")
-      const data = await response.json()
-
-      if (data.success) {
-        setExperiences(data.data || [])
-      }
-    } catch (error) {
-      console.error("[v0] Failed to fetch experiences:", error)
-    } finally {
-      setLoading(false)
+    perfMonitor.startMeasure("experience-page-render")
+    return () => {
+      perfMonitor.endMeasure("experience-page-render")
     }
-  }
+  }, [])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -68,7 +60,7 @@ export default function ExperiencePage() {
                 </Card>
               ))}
             </div>
-          ) : experiences.length === 0 ? (
+          ) : !experiences || experiences.length === 0 ? (
             <Card className="p-12 text-center">
               <p className="text-foreground/60">No experience found. Add some from the admin dashboard!</p>
             </Card>

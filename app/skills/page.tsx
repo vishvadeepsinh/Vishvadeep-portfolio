@@ -1,10 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useCachedFetch } from "@/hooks/use-cached-fetch"
+import { perfMonitor } from "@/lib/performance"
 
 interface Skill {
   id: number
@@ -28,39 +30,31 @@ function SkillBar({ name, proficiency }: { name: string; proficiency: number }) 
 }
 
 export default function SkillsPage() {
-  const [skills, setSkills] = useState<Skill[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: skills, loading } = useCachedFetch<Skill[]>("/api/admin/skills", {
+    cacheKey: "skills",
+    cacheTTL: 300000, // 5 minutes
+  })
 
   useEffect(() => {
-    fetchSkills()
+    perfMonitor.startMeasure("skills-page-render")
+    return () => {
+      perfMonitor.endMeasure("skills-page-render")
+    }
   }, [])
 
-  const fetchSkills = async () => {
-    try {
-      const response = await fetch("/api/admin/skills")
-      const data = await response.json()
-
-      if (data.success) {
-        setSkills(data.data || [])
-      }
-    } catch (error) {
-      console.error("[v0] Failed to fetch skills:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Group skills by category
-  const skillsByCategory = skills.reduce(
-    (acc, skill) => {
-      if (!acc[skill.category]) {
-        acc[skill.category] = []
-      }
-      acc[skill.category].push(skill)
-      return acc
-    },
-    {} as Record<string, Skill[]>,
-  )
+  const skillsByCategory = useMemo(() => {
+    if (!skills) return {}
+    return skills.reduce(
+      (acc, skill) => {
+        if (!acc[skill.category]) {
+          acc[skill.category] = []
+        }
+        acc[skill.category].push(skill)
+        return acc
+      },
+      {} as Record<string, Skill[]>,
+    )
+  }, [skills])
 
   return (
     <div className="min-h-screen flex flex-col">
