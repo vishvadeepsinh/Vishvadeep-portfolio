@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Github } from "lucide-react"
+import { ExternalLink, Code } from "lucide-react"
 import Link from "next/link"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -131,8 +131,13 @@ export default function ProjectsPage() {
                           rel="noopener noreferrer"
                           className="flex-1"
                         >
-                          <Button variant="outline" size="sm" className="w-full bg-transparent">
-                            <Github size={16} className="mr-2" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full bg-transparent"
+                            aria-label="View project on GitHub"
+                          >
+                            <Code size={16} />
                             Project
                           </Button>
                         </Link>
