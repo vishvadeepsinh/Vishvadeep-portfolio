@@ -44,6 +44,18 @@ export default function ProjectsPage() {
     }
   }
 
+  const simplifyUrl = (url: string): string => {
+    if (!url) return url
+    try {
+      const urlObj = new URL(url)
+      // Return only the base URL without query parameters or hash
+      return `${urlObj.origin}${urlObj.pathname}`
+    } catch {
+      // If URL parsing fails, return original URL
+      return url
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -62,7 +74,7 @@ export default function ProjectsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden">
-                  <Skeleton className="h-48 w-full" />
+                  <Skeleton className="aspect-square w-full" />
                   <div className="p-6 space-y-4">
                     <Skeleton className="h-6 w-3/4" />
                     <Skeleton className="h-20 w-full" />
@@ -83,7 +95,7 @@ export default function ProjectsPage() {
               {projects.map((project) => (
                 <Card key={project.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
                   {project.image_url ? (
-                    <div className="h-48 overflow-hidden bg-muted">
+                    <div className="aspect-square overflow-hidden bg-muted">
                       <img
                         src={project.image_url || "/placeholder.svg"}
                         alt={project.title}
@@ -91,7 +103,7 @@ export default function ProjectsPage() {
                       />
                     </div>
                   ) : (
-                    <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                    <div className="aspect-square bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                       <div className="text-center">
                         <div className="text-4xl mb-2">📦</div>
                         <p className="text-foreground/60 text-sm">{project.title}</p>
@@ -113,10 +125,15 @@ export default function ProjectsPage() {
                     </div>
                     <div className="flex gap-3">
                       {project.github_url && project.github_url.trim() !== "" && (
-                        <Link href={project.github_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                        <Link
+                          href={simplifyUrl(project.github_url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1"
+                        >
                           <Button variant="outline" size="sm" className="w-full bg-transparent">
                             <Github size={16} className="mr-2" />
-                            Code
+                            Project
                           </Button>
                         </Link>
                       )}
@@ -124,7 +141,7 @@ export default function ProjectsPage() {
                         <Link href={project.live_url} target="_blank" rel="noopener noreferrer" className="flex-1">
                           <Button size="sm" className="w-full">
                             <ExternalLink size={16} className="mr-2" />
-                            Project
+                            Live Project
                           </Button>
                         </Link>
                       )}
