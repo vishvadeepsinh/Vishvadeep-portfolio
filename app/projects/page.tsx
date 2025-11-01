@@ -124,7 +124,7 @@ export default function ProjectsPage() {
                         <Link href={project.live_url} target="_blank" rel="noopener noreferrer" className="flex-1">
                           <Button size="sm" className="w-full">
                             <ExternalLink size={16} className="mr-2" />
-                            Live
+                            Project
                           </Button>
                         </Link>
                       )}

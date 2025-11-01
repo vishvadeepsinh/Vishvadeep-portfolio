@@ -40,17 +40,27 @@ export default function ImportProjectsPage() {
 
   const validateCSVStructure = (csvText: string) => {
     addDebugLog("Validating CSV structure...")
+
+    if (isHTMLResponse(csvText)) {
+      throw new Error(
+        "Received HTML instead of CSV. Make sure the URL is a direct CSV download link. For Google Sheets, use the export URL or make the sheet publicly accessible.",
+      )
+    }
+
     const lines = csvText.split("\n")
     const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""))
-
-    addDebugLog(`Found ${headers.length} headers: ${headers.join(", ")}`)
+    addDebugLog(
+      `Found ${headers.length} headers: ${headers.slice(0, 10).join(", ")}${headers.length > 10 ? "..." : ""}`,
+    )
     addDebugLog(`Total rows: ${lines.length - 1}`)
 
     const requiredHeaders = ["Project name", "Date", "Design link", "HOURS", "Status"]
     const missingHeaders = requiredHeaders.filter((h) => !headers.includes(h))
 
     if (missingHeaders.length > 0) {
-      throw new Error(`Missing required headers: ${missingHeaders.join(", ")}`)
+      throw new Error(
+        `Missing required headers: ${missingHeaders.join(", ")}. Found headers: ${headers.slice(0, 5).join(", ")}`,
+      )
     }
 
     return { headers, rowCount: lines.length - 1 }
@@ -146,15 +156,17 @@ export default function ImportProjectsPage() {
     setErrors([])
 
     try {
-      addDebugLog(`Fetching CSV from: ${csvUrl}`)
+      const fetchUrl = convertToCSVUrl(csvUrl)
+      addDebugLog(`Fetching CSV from: ${fetchUrl}`)
 
-      const response = await fetch(csvUrl)
+      const response = await fetch(fetchUrl)
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       addDebugLog(`Response status: ${response.status}`)
+      addDebugLog(`Content-Type: ${response.headers.get("content-type")}`)
 
       const csvText = await response.text()
       addDebugLog(`Received ${csvText.length} characters`)
@@ -269,6 +281,34 @@ export default function ImportProjectsPage() {
     }
   }
 
+  // Function to convert Google Sheets URL to CSV export URL
+  const convertToCSVUrl = (url: string): string => {
+    addDebugLog(`Original URL: ${url}`)
+
+    // Check if it's a Google Sheets URL
+    const sheetsMatch = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)
+    if (sheetsMatch) {
+      const sheetId = sheetsMatch[1]
+
+      // Extract gid if present
+      const gidMatch = url.match(/[#&]gid=(\d+)/)
+      const gid = gidMatch ? gidMatch[1] : "0"
+
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
+      addDebugLog(`Converted to CSV export URL: ${csvUrl}`)
+      return csvUrl
+    }
+
+    addDebugLog(`Not a Google Sheets URL, using as-is`)
+    return url
+  }
+
+  // Function to detect if response is HTML instead of CSV
+  const isHTMLResponse = (text: string): boolean => {
+    const trimmed = text.trim()
+    return trimmed.startsWith("<!DOCTYPE") || trimmed.startsWith("<html")
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-8">
@@ -283,14 +323,21 @@ export default function ImportProjectsPage() {
             <Input
               id="csvUrl"
               type="url"
-              placeholder="https://example.com/projects.csv"
+              placeholder="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
               value={csvUrl}
               onChange={(e) => setCsvUrl(e.target.value)}
               className="mt-2"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Paste the direct URL to your CSV file (must be publicly accessible)
-            </p>
+            <div className="text-xs text-muted-foreground mt-2 space-y-1">
+              <p>Paste the URL to your CSV file. Supported formats:</p>
+              <ul className="list-disc list-inside ml-2">
+                <li>Direct CSV file URL (must be publicly accessible)</li>
+                <li>Google Sheets URL (will be automatically converted to CSV export)</li>
+              </ul>
+              <p className="mt-2 text-amber-600">
+                <strong>Note:</strong> For Google Sheets, make sure the sheet is set to "Anyone with the link can view"
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3">
