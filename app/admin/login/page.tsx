@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { createClient, isSupabaseConfigured } from "@/lib/supabase-browser"
+import { Lock } from "lucide-react"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -51,11 +52,17 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Admin Login</h1>
-          <p className="text-foreground/70">Sign in to manage your portfolio</p>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+      <Card className="w-full max-w-md p-8 border-border bg-card shadow-2xl">
+        <div className="flex justify-center mb-8">
+          <div className="p-3 bg-primary/10 rounded-full ring-8 ring-primary/5">
+            <Lock className="w-8 h-8 text-primary" />
+          </div>
+        </div>
+
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Admin Portal</h1>
+          <p className="text-muted-foreground">Sign in to manage your portfolio</p>
         </div>
 
         {!isConfigured && (
@@ -73,25 +80,31 @@ export default function AdminLoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium leading-none">
+              Email Address
             </label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="admin@portfolio.com"
               required
               disabled={!isConfigured}
+              className="bg-muted/50 h-11"
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-2">
-              Password
-            </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="text-sm font-medium leading-none">
+                Password
+              </label>
+              <Link href="/admin/forgot-password" className="text-xs text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
@@ -100,6 +113,7 @@ export default function AdminLoginPage() {
               placeholder="••••••••"
               required
               disabled={!isConfigured}
+              className="bg-muted/50 h-11"
             />
           </div>
 
@@ -110,17 +124,15 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          <Button type="submit" size="lg" className="w-full" disabled={isLoading || !isConfigured}>
+          <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={isLoading || !isConfigured}>
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-foreground/70">
-          <p>
-            <Link href="/" className="text-primary hover:underline">
-              Back to portfolio
-            </Link>
-          </p>
+        <div className="mt-8 text-center">
+          <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            Back to portfolio
+          </Link>
         </div>
       </Card>
     </div>
