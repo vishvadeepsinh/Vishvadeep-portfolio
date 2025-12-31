@@ -86,17 +86,19 @@ export async function GET() {
 
     const supabase = getSupabaseClient()
 
-    const { data, error } = await supabase.from("profile").select("*").eq("id", 1).single()
+    const { data, error } = await supabase.from("profile").select("*").eq("id", 1).maybeSingle()
 
-    if (error && error.code !== "PGRST116") {
+    if (error) {
       console.error("[v0] Supabase fetch error:", error)
-      throw error
+      // We still return success: true with fallback data to prevent app crash
+      return NextResponse.json({ success: true, data: FALLBACK_PROFILE })
     }
 
     console.log("[v0] Profile fetched - avatar_url present:", !!data?.avatar_url)
     return NextResponse.json({ success: true, data: data || FALLBACK_PROFILE })
   } catch (error) {
     console.error("[v0] Profile fetch error:", error)
+    // Always return JSON even on failure
     return NextResponse.json({ success: true, data: FALLBACK_PROFILE })
   }
 }

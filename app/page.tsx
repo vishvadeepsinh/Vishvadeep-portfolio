@@ -16,12 +16,22 @@ export default function Home() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch("/api/admin/profile", {
-          next: { revalidate: 60 },
-        })
+        const response = await fetch("/api/admin/profile")
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const contentType = response.headers.get("content-type")
+        if (!contentType || !contentType.includes("application/json")) {
+          const text = await response.text()
+          console.error("[v0] Profile fetch error: Non-JSON response received")
+          throw new Error("Invalid response format")
+        }
+
         const result = await response.json()
 
-        if (result.data) {
+        if (result.success && result.data) {
           setProfile(result.data)
           if (result.data.avatar_url) {
             setProfileImage(result.data.avatar_url)

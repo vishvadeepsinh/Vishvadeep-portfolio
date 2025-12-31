@@ -10,9 +10,17 @@ export function Footer() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch("/api/admin/profile", {
-          next: { revalidate: 60 },
-        })
+        const response = await fetch("/api/admin/profile")
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const contentType = response.headers.get("content-type")
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Invalid response format")
+        }
+
         const result = await response.json()
         if (result.success && result.data) {
           setProfile(result.data)
