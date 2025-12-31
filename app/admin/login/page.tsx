@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { createClient, isSupabaseConfigured } from "@/lib/supabase-browser"
-import { Lock } from "lucide-react"
+import { ShieldCheck } from "lucide-react"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -56,7 +56,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md p-8 border-border bg-card shadow-2xl">
         <div className="flex justify-center mb-8">
           <div className="p-3 bg-primary/10 rounded-full ring-8 ring-primary/5">
-            <Lock className="w-8 h-8 text-primary" />
+            <ShieldCheck className="w-8 h-8 text-primary" />
           </div>
         </div>
 
