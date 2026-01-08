@@ -10,7 +10,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Vishvadeepsinh Chudasama - Portfolio",
   description: "Python Developer | Full-Stack Developer | UI/UX Designer | Data Analyst",
-  generator: "v0.app",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({

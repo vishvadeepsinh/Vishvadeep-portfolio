@@ -10,8 +10,8 @@ If you're not receiving password reset emails, follow these steps to configure S
 2. Navigate to **Authentication** → **URL Configuration**
 3. Add your application URLs to **Redirect URLs**:
    ```
-   http://localhost:3000/admin/update-password
-   https://yourdomain.com/admin/update-password
+   http://localhost:3000/auth/callback
+   https://vishvadeepsinh.vercel.app/auth/callback
    ```
 4. Set the **Site URL** to your main application URL:
    ```
@@ -73,7 +73,7 @@ Ensure these environment variables are set:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/admin/update-password
+NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000/auth/callback
 ```
 
 ### 7. Create a Test User

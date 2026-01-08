@@ -109,8 +109,16 @@ export default function ForgotPasswordPage() {
         throw new Error("Too many attempts. Please try again later.")
       }
 
+      const redirectUrl = `${
+        typeof window !== "undefined" ? window.location.origin : "https://vishvadeepsinh.vercel.app"
+      }/auth/callback`
+
       console.log("[v0] Sending password reset email to:", email)
-      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      console.log("[v0] Redirect URL:", redirectUrl)
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      })
 
       if (error) {
         console.error("[v0] Password reset error:", error)

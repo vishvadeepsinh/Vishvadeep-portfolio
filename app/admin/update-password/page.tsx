@@ -50,13 +50,19 @@ function UpdatePasswordForm() {
         return
       }
 
-      // Check if user session exists (token is valid)
       const {
         data: { session },
       } = await supabase.auth.getSession()
+
       if (!session) {
-        setIsValidToken(false)
-        setTokenError("Invalid or expired reset link. Please request a new one.")
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+          setIsValidToken(false)
+          setTokenError("Invalid or expired reset link. Please request a new one.")
+        }
       }
     }
 
