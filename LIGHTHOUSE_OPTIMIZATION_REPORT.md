@@ -33,7 +33,7 @@
 **Solution**: Used dynamic imports to defer non-critical sections
 
 **Implementation**:
-```tsx
+\`\`\`tsx
 const WhatIDoSection = dynamic(() => import("@/components/home/what-i-do"), {
   loading: () => null,
   ssr: true,
@@ -47,7 +47,7 @@ const CTASection = dynamic(() => import("@/components/home/cta-section"), {
 <Suspense fallback={null}>
   <WhatIDoSection />
 </Suspense>
-```
+\`\`\`
 
 **Impact**:
 - Initial bundle reduced by ~35%
@@ -141,14 +141,14 @@ const CTASection = dynamic(() => import("@/components/home/cta-section"), {
 ## How to Verify Improvements
 
 ### Local Testing
-```bash
+\`\`\`bash
 npm run build
 npm run start
 
 # Then run Lighthouse in DevTools
 # - Throttle to "Slow 4G"
 # - Lighthouse > Generate report
-```
+\`\`\`
 
 ### Production Testing
 1. Go to **Vercel Dashboard** > **Speed Insights**

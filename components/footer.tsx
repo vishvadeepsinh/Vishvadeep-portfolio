@@ -1,7 +1,5 @@
 "use client"
 
-import { useCallback } from "react"
-
 import Link from "next/link"
 import { Github, Linkedin, Mail, Twitter } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
@@ -10,30 +8,6 @@ export function Footer() {
   const [profile, setProfile] = useState<any>(null)
   const [isMounted, setIsMounted] = useState(false)
 
-  const fetchProfile = useCallback(async () => {
-    try {
-      const response = await fetch("/api/admin/profile", {
-        next: { revalidate: 3600 },
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const contentType = response.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Invalid response format")
-      }
-
-      const result = await response.json()
-      if (result.success && result.data) {
-        setProfile(result.data)
-      }
-    } catch (error) {
-      console.error("[v0] Failed to fetch profile for footer:", error)
-    }
-  }, [])
-
   useEffect(() => {
     // Performance: Only fetch on client side after mounting to avoid hydration issues
     setIsMounted(true)
@@ -41,15 +15,39 @@ export function Footer() {
     const controller = new AbortController()
 
     // Performance: Delay footer fetch to prioritize above-the-fold content
-    const timer = setTimeout(() => {
-      fetchProfile()
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch("/api/admin/profile", {
+          signal: controller.signal,
+          next: { revalidate: 3600 },
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const contentType = response.headers.get("content-type")
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Invalid response format")
+        }
+
+        const result = await response.json()
+        if (result.success && result.data) {
+          setProfile(result.data)
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return
+        }
+        console.error("[v0] Failed to fetch profile for footer:", error)
+      }
     }, 1000)
 
     return () => {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [fetchProfile])
+  }, [])
 
   const socialLinks = useMemo(() => {
     if (!profile) return []
