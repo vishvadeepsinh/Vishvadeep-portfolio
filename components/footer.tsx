@@ -1,36 +1,55 @@
 "use client"
 
+import { useCallback } from "react"
+
 import Link from "next/link"
 import { Github, Linkedin, Mail, Twitter } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 
 export function Footer() {
   const [profile, setProfile] = useState<any>(null)
+  const [isMounted, setIsMounted] = useState(false)
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const response = await fetch("/api/admin/profile", {
+        next: { revalidate: 3600 },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const contentType = response.headers.get("content-type")
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Invalid response format")
+      }
+
+      const result = await response.json()
+      if (result.success && result.data) {
+        setProfile(result.data)
+      }
+    } catch (error) {
+      console.error("[v0] Failed to fetch profile for footer:", error)
+    }
+  }, [])
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch("/api/admin/profile")
+    // Performance: Only fetch on client side after mounting to avoid hydration issues
+    setIsMounted(true)
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
+    const controller = new AbortController()
 
-        const contentType = response.headers.get("content-type")
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Invalid response format")
-        }
+    // Performance: Delay footer fetch to prioritize above-the-fold content
+    const timer = setTimeout(() => {
+      fetchProfile()
+    }, 1000)
 
-        const result = await response.json()
-        if (result.success && result.data) {
-          setProfile(result.data)
-        }
-      } catch (error) {
-        console.error("[v0] Failed to fetch profile for footer:", error)
-      }
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
     }
-    fetchProfile()
-  }, [])
+  }, [fetchProfile])
 
   const socialLinks = useMemo(() => {
     if (!profile) return []
@@ -50,6 +69,11 @@ export function Footer() {
     }
     return links
   }, [profile])
+
+  // Performance: Don't render social links until mounted (avoid hydration mismatch)
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <footer className="border-t border-border bg-muted/30 py-12">
