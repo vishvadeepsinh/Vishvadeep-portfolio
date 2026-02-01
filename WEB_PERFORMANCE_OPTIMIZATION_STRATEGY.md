@@ -21,7 +21,7 @@
 - ✅ Defer non-critical profile data fetching
 
 **Implementation Details:**
-```tsx
+\`\`\`tsx
 // DNS Prefetch reduces DNS lookup time by ~100-300ms
 <link rel="dns-prefetch" href="https://drqedqzxdzdaoruyvwpb.supabase.co" />
 
@@ -35,7 +35,7 @@
   sizes="(max-width: 768px) 100vw, 50vw"
   priority // Only on above-the-fold images
 />
-```
+\`\`\`
 
 ### 1.2 Time to Interactive (TTI) - < 3 seconds
 
@@ -47,7 +47,7 @@
 - ✅ Abort fetch on component unmount to save bandwidth
 
 **Bundle Size Reduction:**
-```tsx
+\`\`\`tsx
 // Dynamic import reduces initial JS bundle
 const DynamicFooter = dynamic(() => 
   import("@/components/footer").then(mod => ({ default: mod.Footer })),
@@ -56,7 +56,7 @@ const DynamicFooter = dynamic(() =>
 
 // Lazy images load only when needed
 <Image ... loading="lazy" sizes="..." />
-```
+\`\`\`
 
 ### 1.3 Cumulative Layout Shift (CLS) - < 0.1
 
@@ -74,7 +74,7 @@ const DynamicFooter = dynamic(() =>
 ### 2.1 Image Optimization
 
 **Current Implementation:**
-```javascript
+\`\`\`javascript
 // next.config.mjs
 images: {
   remotePatterns: [
@@ -85,7 +85,7 @@ images: {
   minimumCacheTTL: 31536000, // Cache 1 year
   sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
 }
-```
+\`\`\`
 
 **Best Practices Applied:**
 - ✅ AVIF format (20% smaller than WebP)
@@ -103,22 +103,22 @@ images: {
 - ✅ No PostCSS configuration overhead
 
 **CSS Loading Strategy:**
-```css
+\`\`\`css
 /* Inline critical CSS in globals.css */
 @import "tailwindcss";
 @layer base { /* Critical styles */ }
 @layer components { /* Secondary styles */ }
-```
+\`\`\`
 
 ### 2.3 Font Optimization
 
 **Current Implementation:**
-```tsx
+\`\`\`tsx
 import { Geist, Geist_Mono } from "next/font/google"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
-```
+\`\`\`
 
 **Benefits:**
 - ✅ Subset to Latin only (reduces ~40KB)
@@ -136,7 +136,7 @@ Next.js automatically splits code per route. Each page loads only its dependenci
 ### 3.2 Component-Based Code Splitting
 
 **Footer (Deferred Loading):**
-```tsx
+\`\`\`tsx
 const DynamicFooter = dynamic(() => import("@/components/footer"), {
   loading: () => null, // No skeleton needed
   ssr: true,
@@ -144,7 +144,7 @@ const DynamicFooter = dynamic(() => import("@/components/footer"), {
 
 // Fetch data after 1 second to prioritize above-the-fold content
 const timer = setTimeout(() => fetchProfile(), 1000)
-```
+\`\`\`
 
 **Benefits:**
 - ✅ Reduces initial JS bundle by ~15KB
@@ -158,37 +158,37 @@ const timer = setTimeout(() => fetchProfile(), 1000)
 ### 4.1 HTTP Cache Headers
 
 **Default Caching (1 hour revalidate, 1 day stale):**
-```javascript
+\`\`\`javascript
 headers: [{
   key: 'Cache-Control',
   value: 'public, max-age=3600, stale-while-revalidate=86400'
 }]
-```
+\`\`\`
 
 **Static Assets (Immutable, 1 year):**
-```javascript
+\`\`\`javascript
 // /static/* and /images/* paths
 Cache-Control: public, max-age=31536000, immutable
-```
+\`\`\`
 
 ### 4.2 API Response Caching
 
 **Profile Data (1 hour TTL):**
-```tsx
+\`\`\`tsx
 const response = await fetch("/api/admin/profile", {
   next: { revalidate: 3600 } // Revalidate every hour
 })
-```
+\`\`\`
 
 ### 4.3 Browser Cache Management
 
 **Service Worker Recommendations:**
-```javascript
+\`\`\`javascript
 // Consider adding for offline support
 - Cache JS/CSS assets
 - Cache images with versioning
 - Network first for API calls
-```
+\`\`\`
 
 ---
 
@@ -196,7 +196,7 @@ const response = await fetch("/api/admin/profile", {
 
 ### 5.1 Connection Pre-Warming
 
-```html
+\`\`\`html
 <!-- DNS Prefetch: Resolves domain name -->
 <link rel="dns-prefetch" href="https://cdn.example.com" />
 
@@ -205,7 +205,7 @@ const response = await fetch("/api/admin/profile", {
 
 <!-- Prefetch: Downloads resource for next navigation -->
 <link rel="prefetch" href="/next-page" as="document" />
-```
+\`\`\`
 
 ### 5.2 Request Prioritization
 
@@ -230,32 +230,32 @@ Automatically enabled for optimal resource prioritization.
 ### 6.1 Mobile-First Approach
 
 **Breakpoint Strategy:**
-```tailwind
+\`\`\`tailwind
 sm: 640px   /* Small phones */
 md: 768px   /* Tablets */
 lg: 1024px  /* Desktops */
 xl: 1280px  /* Large desktops */
-```
+\`\`\`
 
 ### 6.2 Flexible Images
 
-```tsx
+\`\`\`tsx
 <Image
   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
   srcSet // Automatically generated
 />
-```
+\`\`\`
 
 ### 6.3 Viewport Configuration
 
-```tsx
+\`\`\`tsx
 viewport: {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
 }
-```
+\`\`\`
 
 ---
 
@@ -264,7 +264,7 @@ viewport: {
 ### 7.1 Vercel Analytics Integration
 
 **Web Vitals Tracked:**
-```tsx
+\`\`\`tsx
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -272,11 +272,11 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 // - FCP, LCP, CLS
 // - Route performance
 // - Web vitals trends
-```
+\`\`\`
 
 ### 7.2 Manual Performance Monitoring
 
-```tsx
+\`\`\`tsx
 // Track custom metrics
 useEffect(() => {
   if (window.performance) {
@@ -285,16 +285,16 @@ useEffect(() => {
     console.log('Page Load Time:', pageLoadTime)
   }
 }, [])
-```
+\`\`\`
 
 ### 7.3 Debugging with Lighthouse
 
 **Run Locally:**
-```bash
+\`\`\`bash
 npm run build
 npm run start
 # Open Chrome DevTools → Lighthouse
-```
+\`\`\`
 
 **Performance Checks:**
 - ✅ FCP should be < 1.8s
@@ -307,13 +307,13 @@ npm run start
 ## 8. Security Headers (Performance + Safety)
 
 **Current Implementation:**
-```javascript
+\`\`\`javascript
 headers: [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'X-XSS-Protection', value: '1; mode=block' }
 ]
-```
+\`\`\`
 
 ---
 
@@ -401,22 +401,22 @@ headers: [
 ## 12. Testing Performance
 
 ### Chrome DevTools Lighthouse
-```
+\`\`\`
 Audit → Performance → Generate Report
-```
+\`\`\`
 
 ### WebPageTest
-```
+\`\`\`
 https://www.webpagetest.org/
 Enter: vishvadeepsinh.vercel.app
 Compare performance across regions
-```
+\`\`\`
 
 ### Vercel Analytics Dashboard
-```
+\`\`\`
 https://vercel.com/dashboard → Project → Analytics
 View real-world Core Web Vitals data
-```
+\`\`\`
 
 ---
 

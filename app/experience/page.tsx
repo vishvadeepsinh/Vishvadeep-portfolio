@@ -6,8 +6,6 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCachedFetch } from "@/hooks/use-cached-fetch"
-import { perfMonitor } from "@/lib/performance"
-import { useEffect } from "react"
 
 interface Experience {
   id: number
@@ -24,13 +22,6 @@ export default function ExperiencePage() {
     cacheKey: "experience",
     cacheTTL: 300000, // 5 minutes
   })
-
-  useEffect(() => {
-    perfMonitor.startMeasure("experience-page-render")
-    return () => {
-      perfMonitor.endMeasure("experience-page-render")
-    }
-  }, [])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)

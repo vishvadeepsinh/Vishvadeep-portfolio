@@ -1,12 +1,11 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCachedFetch } from "@/hooks/use-cached-fetch"
-import { perfMonitor } from "@/lib/performance"
 
 interface Skill {
   id: number
@@ -35,12 +34,7 @@ export default function SkillsPage() {
     cacheTTL: 300000, // 5 minutes
   })
 
-  useEffect(() => {
-    perfMonitor.startMeasure("skills-page-render")
-    return () => {
-      perfMonitor.endMeasure("skills-page-render")
-    }
-  }, [])
+
 
   const skillsByCategory = useMemo(() => {
     if (!skills) return {}

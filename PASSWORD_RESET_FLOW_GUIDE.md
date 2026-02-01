@@ -6,7 +6,7 @@ This guide documents the secure password reset flow implementation for the admin
 
 ## Architecture Diagram
 
-```
+\`\`\`
 User clicks "Forgot Password"
     ↓
 ForgotPasswordPage (/admin/forgot-password)
@@ -42,7 +42,7 @@ Password updated in Supabase (old passwords invalidated)
 Success confirmation
     ↓
 Redirect to /admin/login
-```
+\`\`\`
 
 ## Step-by-Step Flow
 
@@ -142,10 +142,10 @@ Redirect to /admin/login
    - Check email template has correct content
 
 2. **Verify Redirect URL is Whitelisted**
-   ```sql
+   \`\`\`sql
    -- Check your Supabase project configuration
    -- Dashboard → Settings → Authentication → URL Configuration
-   ```
+   \`\`\`
    - Must include: `https://vishvadeepsinh.vercel.app/auth/callback`
    - For development: `http://localhost:3000/auth/callback`
 
@@ -156,13 +156,13 @@ Redirect to /admin/login
    - Clear localStorage: `localStorage.clear()` and try again
 
 4. **Test with SQL Query**
-   ```sql
+   \`\`\`sql
    -- Check if user exists in auth.users table
    SELECT id, email, created_at FROM auth.users WHERE email = 'your-email@example.com';
    
    -- Check for any auth logs (if available in your Supabase plan)
    SELECT * FROM auth.audit_log_entries WHERE created_at > now() - interval '5 minutes';
-   ```
+   \`\`\`
 
 5. **Check Email Provider (if using custom SMTP)**
    - Dashboard → Settings → Email Templates
@@ -179,10 +179,10 @@ Redirect to /admin/login
 **Debugging Steps:**
 
 1. **Verify Callback Route Exists**
-   ```bash
+   \`\`\`bash
    # Check file exists
    ls -la app/auth/callback/route.ts
-   ```
+   \`\`\`
    - Route must be at: `app/auth/callback/route.ts`
    - Not `app/api/auth/callback/route.ts`
 
@@ -197,10 +197,10 @@ Redirect to /admin/login
    - The redirect_to parameter should be set correctly
 
 4. **Test Callback Route Directly**
-   ```bash
+   \`\`\`bash
    # Simulate the callback with a test (requires valid token)
    curl "http://localhost:3000/auth/callback?code=test_code&type=recovery"
-   ```
+   \`\`\`
 
 ### Issue 3: Update password page shows "Invalid or expired reset link"
 
@@ -229,17 +229,17 @@ Redirect to /admin/login
 
 4. **Review Callback Route Logs**
    - Add logging to `app/auth/callback/route.ts`:
-   ```typescript
+   \`\`\`typescript
    const { error } = await supabase.auth.exchangeCodeForSession(code)
    console.log("[v0] Code exchange result:", { error, code, type })
-   ```
+   \`\`\`
 
 5. **Verify Supabase Credentials**
-   ```bash
+   \`\`\`bash
    # Check that environment variables are set correctly
    echo $NEXT_PUBLIC_SUPABASE_URL
    echo $NEXT_PUBLIC_SUPABASE_ANON_KEY
-   ```
+   \`\`\`
 
 ### Issue 4: Password update fails despite correct entry
 
@@ -265,18 +265,18 @@ Redirect to /admin/login
    - All must be satisfied
 
 3. **Test Update Directly**
-   ```typescript
+   \`\`\`typescript
    const { error } = await supabase.auth.updateUser({ 
      password: 'NewPassword123!' 
    })
    if (error) console.log("[v0] Update error:", error)
-   ```
+   \`\`\`
 
 4. **Check Session Validity**
-   ```typescript
+   \`\`\`typescript
    const { data: { session } } = await supabase.auth.getSession()
    console.log("[v0] Session valid:", !!session)
-   ```
+   \`\`\`
 
 5. **Verify No Active Login Sessions**
    - If user is already logged in elsewhere, update might fail
@@ -380,7 +380,7 @@ Redirect to /admin/login
 
 ### Recommended Logging Points
 
-```typescript
+\`\`\`typescript
 // In forgot-password page
 console.log("[v0] Password reset request for:", email)
 console.log("[v0] Redirect URL:", redirectUrl)
@@ -392,7 +392,7 @@ console.log("[v0] Code exchange success, redirecting to:", redirectPath)
 // In update password
 console.log("[v0] Session valid:", !!session)
 console.log("[v0] Password update completed")
-```
+\`\`\`
 
 ### Production Monitoring
 
