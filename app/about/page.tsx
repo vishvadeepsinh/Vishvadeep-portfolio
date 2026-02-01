@@ -1,26 +1,17 @@
 "use client"
 
-import { useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCachedFetch } from "@/hooks/use-cached-fetch"
-import { perfMonitor } from "@/lib/performance"
 
 export default function AboutPage() {
   const { data: about, loading } = useCachedFetch<any>("/api/admin/about", {
     cacheKey: "about",
     cacheTTL: 300000, // 5 minutes
   })
-
-  useEffect(() => {
-    perfMonitor.startMeasure("about-page-render")
-    return () => {
-      perfMonitor.endMeasure("about-page-render")
-    }
-  }, [])
 
   return (
     <div className="min-h-screen flex flex-col">

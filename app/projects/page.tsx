@@ -10,8 +10,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCachedFetch } from "@/hooks/use-cached-fetch"
-import { perfMonitor } from "@/lib/performance"
-import { useEffect } from "react"
 
 interface Project {
   id: number
@@ -30,12 +28,7 @@ export default function ProjectsPage() {
     cacheTTL: 300000, // 5 minutes
   })
 
-  useEffect(() => {
-    perfMonitor.startMeasure("projects-page-render")
-    return () => {
-      perfMonitor.endMeasure("projects-page-render")
-    }
-  }, [])
+
 
   const simplifyUrl = (url: string): string => {
     if (!url) return url
@@ -112,11 +105,14 @@ export default function ProjectsPage() {
                     </div>
                     <p className="text-foreground/70 mb-4 flex-1">{project.description}</p>
                     <div className="flex flex-wrap gap-2 mb-6">
-                      {project.technologies.map((tech) => (
+                      {project.technologies.slice(0, 3).map((tech) => (
                         <Badge key={tech} variant="secondary">
                           {tech}
                         </Badge>
                       ))}
+                      {project.technologies.length > 3 && (
+                        <Badge variant="secondary">+{project.technologies.length - 3}</Badge>
+                      )}
                     </div>
                     <div className="flex gap-3">
                       {project.github_url && project.github_url.trim() !== "" && (

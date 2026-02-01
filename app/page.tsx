@@ -4,25 +4,22 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Code2, Palette, BarChart3 } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { useState, useEffect, Suspense } from "react"
 import Image from "next/image"
 import dynamic from "next/dynamic"
+import { Code2, Palette, BarChart3 } from "lucide-react" // Import the missing variables
 
-// Dynamically import footer to reduce initial bundle size
-const DynamicFooter = dynamic(() => import("@/components/footer").then(mod => ({ default: mod.Footer })), {
+// Lazy-load heavy components that aren't needed for LCP
+const WhatIDoSection = dynamic(() => import("@/components/home/what-i-do"), {
   loading: () => null,
   ssr: true,
 })
 
-// Performance: Use a simple skeleton for the profile image
-function ProfileImageSkeleton() {
-  return (
-    <div className="aspect-square rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center animate-pulse">
-      <div className="text-6xl">👨‍💻</div>
-    </div>
-  )
-}
+const CTASection = dynamic(() => import("@/components/home/cta-section"), {
+  loading: () => null,
+  ssr: true,
+})
 
 export default function Home() {
   const [profileImage, setProfileImage] = useState<string>("")
@@ -133,51 +130,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Skills */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12 text-center">What I Do</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-lg border border-border bg-card hover:shadow-lg transition-shadow">
-              <Code2 className="text-primary mb-4" size={32} />
-              <h3 className="text-xl font-semibold mb-2">Full-Stack Development</h3>
-              <p className="text-foreground/70">
-                Building scalable web applications with Python/Django, Node.js, React, and modern databases.
-              </p>
-            </div>
-            <div className="p-6 rounded-lg border border-border bg-card hover:shadow-lg transition-shadow">
-              <Palette className="text-primary mb-4" size={32} />
-              <h3 className="text-xl font-semibold mb-2">UI/UX Design</h3>
-              <p className="text-foreground/70">
-                Creating intuitive and beautiful user interfaces with Figma, focusing on user experience.
-              </p>
-            </div>
-            <div className="p-6 rounded-lg border border-border bg-card hover:shadow-lg transition-shadow">
-              <BarChart3 className="text-primary mb-4" size={32} />
-              <h3 className="text-xl font-semibold mb-2">Data Analysis</h3>
-              <p className="text-foreground/70">
-                Deriving insights from data using Tableau, Power BI, and Python for data-driven decisions.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Lazy-load sections below the fold */}
+      <Suspense fallback={null}>
+        <WhatIDoSection />
+      </Suspense>
 
-      {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Work Together?</h2>
-          <p className="text-lg text-foreground/70 mb-8 max-w-2xl mx-auto">
-            I'm always interested in hearing about new projects and opportunities.
-          </p>
-          <Link href="/contact">
-            <Button size="lg">
-              Start a Conversation
-              <ArrowRight className="ml-2" size={20} />
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <Suspense fallback={null}>
+        <CTASection />
+      </Suspense>
 
       <Footer />
     </div>

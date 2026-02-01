@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { dataCache } from "@/lib/data-cache"
-import { perfMonitor } from "@/lib/performance"
 
 interface UseCachedFetchOptions {
   cacheKey: string
@@ -19,15 +18,12 @@ export function useCachedFetch<T>(url: string, options: UseCachedFetchOptions) {
   const { cacheKey, cacheTTL = 60000, onSuccess, onError } = options
 
   const fetchData = useCallback(async () => {
-    perfMonitor.startMeasure(`fetch-${cacheKey}`)
-
     // Check cache first
     const cached = dataCache.get<T>(cacheKey)
     if (cached) {
       console.log(`[Cache] Hit for ${cacheKey}`)
       setData(cached)
       setLoading(false)
-      perfMonitor.endMeasure(`fetch-${cacheKey}`)
       return
     }
 
@@ -49,7 +45,6 @@ export function useCachedFetch<T>(url: string, options: UseCachedFetchOptions) {
       console.error(`[Fetch Error] ${cacheKey}:`, error)
     } finally {
       setLoading(false)
-      perfMonitor.endMeasure(`fetch-${cacheKey}`)
     }
   }, [url, cacheKey, cacheTTL, onSuccess, onError])
 
