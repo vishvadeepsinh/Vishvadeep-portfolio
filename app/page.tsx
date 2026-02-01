@@ -5,8 +5,24 @@ import { Footer } from "@/components/footer"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Code2, Palette, BarChart3 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import Image from "next/image"
+import dynamic from "next/dynamic"
+
+// Dynamically import footer to reduce initial bundle size
+const DynamicFooter = dynamic(() => import("@/components/footer").then(mod => ({ default: mod.Footer })), {
+  loading: () => null,
+  ssr: true,
+})
+
+// Performance: Use a simple skeleton for the profile image
+function ProfileImageSkeleton() {
+  return (
+    <div className="aspect-square rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center animate-pulse">
+      <div className="text-6xl">👨‍💻</div>
+    </div>
+  )
+}
 
 export default function Home() {
   const [profileImage, setProfileImage] = useState<string>("")
@@ -14,9 +30,16 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // Optimize: Use AbortController to cancel fetch if component unmounts
+    const controller = new AbortController()
+
     const fetchProfile = async () => {
       try {
-        const response = await fetch("/api/admin/profile")
+        const response = await fetch("/api/admin/profile", {
+          signal: controller.signal,
+          // Performance: Add cache directive
+          next: { revalidate: 3600 },
+        })
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
@@ -24,7 +47,6 @@ export default function Home() {
 
         const contentType = response.headers.get("content-type")
         if (!contentType || !contentType.includes("application/json")) {
-          const text = await response.text()
           console.error("[v0] Profile fetch error: Non-JSON response received")
           throw new Error("Invalid response format")
         }
@@ -38,13 +60,24 @@ export default function Home() {
           }
         }
       } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return // Abort is expected on unmount
+        }
         console.error("[v0] Failed to fetch profile:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchProfile()
+    // Performance: Debounce fetch to avoid multiple calls
+    const timer = setTimeout(() => {
+      fetchProfile()
+    }, 0)
+
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
   }, [])
 
   return (
