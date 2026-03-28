@@ -34,17 +34,17 @@ export default function Home() {
       try {
         const response = await fetch("/api/admin/profile", {
           signal: controller.signal,
-          // Performance: Add cache directive
-          next: { revalidate: 3600 },
         })
 
         if (!response.ok) {
+          console.error("[v0] Profile API returned:", response.status, response.statusText)
           throw new Error(`HTTP error! status: ${response.status}`)
         }
 
         const contentType = response.headers.get("content-type")
         if (!contentType || !contentType.includes("application/json")) {
-          console.error("[v0] Profile fetch error: Non-JSON response received")
+          const text = await response.text()
+          console.error("[v0] Profile fetch error: Non-JSON response:", text.substring(0, 100))
           throw new Error("Invalid response format")
         }
 

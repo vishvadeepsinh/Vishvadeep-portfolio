@@ -24,7 +24,7 @@ const FALLBACK_PROFILE = {
   linkedin_url: "https://linkedin.com",
   twitter_url: "https://twitter.com",
   updated_at: new Date().toISOString(),
-}
+} as const
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,28 +77,36 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
+    console.log("[v0] GET /api/admin/profile called")
+    
     if (!isSupabaseConfigured()) {
       console.warn("[v0] Supabase not configured - returning fallback profile")
-      return NextResponse.json({ success: true, data: FALLBACK_PROFILE })
+      const response = { success: true, data: FALLBACK_PROFILE }
+      console.log("[v0] Returning fallback response")
+      return NextResponse.json(response)
     }
 
     const supabase = getSupabaseClient()
+    console.log("[v0] Fetching profile from Supabase")
 
     const { data, error } = await supabase.from("profile").select("*").eq("id", 1).maybeSingle()
 
     if (error) {
-      console.error("[v0] Supabase fetch error:", error)
+      console.error("[v0] Supabase fetch error:", error.message)
       // We still return success: true with fallback data to prevent app crash
-      return NextResponse.json({ success: true, data: FALLBACK_PROFILE })
+      const response = { success: true, data: FALLBACK_PROFILE }
+      return NextResponse.json(response)
     }
 
     console.log("[v0] Profile fetched - avatar_url present:", !!data?.avatar_url)
-    return NextResponse.json({ success: true, data: data || FALLBACK_PROFILE })
+    const response = { success: true, data: data || FALLBACK_PROFILE }
+    return NextResponse.json(response)
   } catch (error) {
-    console.error("[v0] Profile fetch error:", error)
+    console.error("[v0] Profile fetch error:", error instanceof Error ? error.message : String(error))
     // Always return JSON even on failure
-    return NextResponse.json({ success: true, data: FALLBACK_PROFILE })
+    const response = { success: true, data: FALLBACK_PROFILE }
+    return NextResponse.json(response)
   }
 }
