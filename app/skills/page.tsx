@@ -48,17 +48,14 @@ export default function SkillsPage() {
             </p>
           </div>
 
-          {loading ? (
+          {Object.keys(skillsByCategory).length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="p-6">
-                  <Skeleton className="h-6 w-1/2 mb-6" />
+              {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
+                <Card key={category} className="p-6">
+                  <h3 className="text-xl font-semibold mb-6 capitalize">{category}</h3>
                   <div className="space-y-4">
-                    {[1, 2, 3].map((j) => (
-                      <div key={j}>
-                        <Skeleton className="h-4 w-full mb-2" />
-                        <Skeleton className="h-2 w-full" />
-                      </div>
+                    {categorySkills.map((skill) => (
+                      <SkillBar key={skill.id} name={skill.name} proficiency={skill.proficiency} />
                     ))}
                   </div>
                 </Card>
