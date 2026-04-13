@@ -30,33 +30,9 @@ export default function ProjectsPage() {
           <div className="mb-12">
             <h1 className="text-4xl font-bold mb-4">Projects</h1>
             <p className="text-lg text-foreground/70 mb-8">A selection of projects showcasing my expertise in full-stack development, design, and data analysis.</p>
-            <p className="text-lg text-foreground/70">
-              A selection of projects I've built showcasing my skills in full-stack development, UI/UX design, and data
-              analysis.
-            </p>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="overflow-hidden">
-                  <Skeleton className="aspect-square w-full" />
-                  <div className="p-6 space-y-4">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-20 w-full" />
-                    <div className="flex gap-2">
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-6 w-20" />
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : !projects || projects.length === 0 ? (
-            <Card className="p-12 text-center">
-              <p className="text-foreground/60">No projects found. Add some from the admin dashboard!</p>
-            </Card>
-          ) : (
+          {projects && projects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {projects.map((project, index) => (
                 <Card key={project.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
@@ -133,9 +109,9 @@ export default function ProjectsPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <Card className="p-12 text-center">
               <p className="text-foreground/60">No projects available.</p>
-            </div>
+            </Card>
           )}
         </div>
       </main>
