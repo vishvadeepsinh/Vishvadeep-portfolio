@@ -43,15 +43,6 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Admin Link */}
-          <div className="hidden md:block">
-            <Link href="/admin" prefetch={false}>
-              <Button variant="outline" size="sm">
-                Admin
-              </Button>
-            </Link>
-          </div>
-
           {/* Mobile Menu Button */}
           <button className="md:hidden" onClick={handleToggle} aria-label="Toggle menu">
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -72,14 +63,7 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/admin"
-              className="block px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-muted rounded transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Admin
-            </Link>
-          </div>
+              </div>
         )}
       </div>
     </nav>
