@@ -1,5 +1,3 @@
-"use client"
-
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
@@ -8,37 +6,20 @@ import { Button } from "@/components/ui/button"
 import { ExternalLink, Code } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useCachedFetch } from "@/hooks/use-cached-fetch"
+import { STATIC_PROJECTS } from "@/lib/static-data/projects"
 
-interface Project {
-  id: number
-  title: string
-  description: string
-  technologies: string[]
-  github_url: string
-  live_url: string
-  featured: boolean
-  image_url?: string
+function simplifyUrl(url: string): string {
+  if (!url) return url
+  try {
+    const urlObj = new URL(url)
+    return `${urlObj.origin}${urlObj.pathname}`
+  } catch {
+    return url
+  }
 }
 
 export default function ProjectsPage() {
-  const { data: projects, loading } = useCachedFetch<Project[]>("/api/admin/projects", {
-    cacheKey: "projects",
-    cacheTTL: 300000, // 5 minutes
-  })
-
-
-
-  const simplifyUrl = (url: string): string => {
-    if (!url) return url
-    try {
-      const urlObj = new URL(url)
-      return `${urlObj.origin}${urlObj.pathname}`
-    } catch {
-      return url
-    }
-  }
+  const projects = STATIC_PROJECTS
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -48,6 +29,7 @@ export default function ProjectsPage() {
         <div className="max-w-6xl mx-auto">
           <div className="mb-12">
             <h1 className="text-4xl font-bold mb-4">Projects</h1>
+            <p className="text-lg text-foreground/70 mb-8">A selection of projects showcasing my expertise in full-stack development, design, and data analysis.</p>
             <p className="text-lg text-foreground/70">
               A selection of projects I've built showcasing my skills in full-stack development, UI/UX design, and data
               analysis.
@@ -149,6 +131,10 @@ export default function ProjectsPage() {
                   </div>
                 </Card>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-foreground/60">No projects available.</p>
             </div>
           )}
         </div>

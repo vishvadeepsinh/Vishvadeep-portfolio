@@ -1,32 +1,16 @@
-"use client"
-
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useCachedFetch } from "@/hooks/use-cached-fetch"
+import { STATIC_EXPERIENCE } from "@/lib/static-data/experience"
 
-interface Experience {
-  id: number
-  company: string
-  position: string
-  description: string
-  start_date: string
-  end_date: string | null
-  is_current: boolean
+function formatDate(dateString: string) {
+  const date = new Date(dateString)
+  return date.toLocaleDateString("en-US", { month: "short", year: "numeric" })
 }
 
 export default function ExperiencePage() {
-  const { data: experiences, loading } = useCachedFetch<Experience[]>("/api/admin/experience", {
-    cacheKey: "experience",
-    cacheTTL: 300000, // 5 minutes
-  })
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", { month: "short", year: "numeric" })
-  }
+  const experiences = STATIC_EXPERIENCE
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -41,21 +25,7 @@ export default function ExperiencePage() {
             </p>
           </div>
 
-          {loading ? (
-            <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="p-6">
-                  <Skeleton className="h-6 w-1/2 mb-2" />
-                  <Skeleton className="h-4 w-1/3 mb-4" />
-                  <Skeleton className="h-20 w-full" />
-                </Card>
-              ))}
-            </div>
-          ) : !experiences || experiences.length === 0 ? (
-            <Card className="p-12 text-center">
-              <p className="text-foreground/60">No experience found. Add some from the admin dashboard!</p>
-            </Card>
-          ) : (
+          {experiences && experiences.length > 0 ? (
             <div className="space-y-6">
               {experiences.map((exp) => (
                 <Card key={exp.id} className="p-6 border-l-4 border-l-primary">
@@ -73,6 +43,10 @@ export default function ExperiencePage() {
                 </Card>
               ))}
             </div>
+          ) : (
+            <Card className="p-12 text-center">
+              <p className="text-foreground/60">No experience data available.</p>
+            </Card>
           )}
         </div>
       </main>

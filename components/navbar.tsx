@@ -1,27 +1,25 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useCallback, useMemo } from "react"
+import { useState } from "react"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
+const NAVIGATION_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/projects", label: "Projects" },
+  { href: "/skills", label: "Skills" },
+  { href: "/experience", label: "Experience" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+]
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
-  // Performance: Memoize links to prevent re-renders
-  const links = useMemo(() => [
-    { href: "/", label: "Home" },
-    { href: "/projects", label: "Projects" },
-    { href: "/skills", label: "Skills" },
-    { href: "/experience", label: "Experience" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
-  ], [])
-
-  // Performance: Memoize toggle handler
-  const handleToggle = useCallback(() => {
+  const handleToggle = () => {
     setIsOpen(prev => !prev)
-  }, [])
+  }
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -33,7 +31,7 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex gap-8">
-            {links.map((link) => (
+            {NAVIGATION_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -60,10 +58,11 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden pb-4 space-y-2">
-            {links.map((link) => (
+          {/* Mobile Navigation */}
+          {isOpen && (
+            <div className="md:hidden absolute top-16 left-0 right-0 bg-background border-b border-border p-4">
+              <div className="flex flex-col gap-4">
+                {NAVIGATION_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

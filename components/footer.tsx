@@ -1,53 +1,9 @@
-"use client"
-
 import Link from "next/link"
 import { Github, Linkedin, Mail, Twitter } from "lucide-react"
-import { useState, useEffect, useMemo } from "react"
+import { STATIC_PROFILE } from "@/lib/static-data/profile"
 
 export function Footer() {
-  const [profile, setProfile] = useState<any>(null)
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    // Performance: Only fetch on client side after mounting to avoid hydration issues
-    setIsMounted(true)
-
-    const controller = new AbortController()
-
-    // Performance: Delay footer fetch to prioritize above-the-fold content
-    const timer = setTimeout(async () => {
-      try {
-        const response = await fetch("/api/admin/profile", {
-          signal: controller.signal,
-          next: { revalidate: 3600 },
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const contentType = response.headers.get("content-type")
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Invalid response format")
-        }
-
-        const result = await response.json()
-        if (result.success && result.data) {
-          setProfile(result.data)
-        }
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          return
-        }
-        console.error("[v0] Failed to fetch profile for footer:", error)
-      }
-    }, 1000)
-
-    return () => {
-      clearTimeout(timer)
-      controller.abort()
-    }
-  }, [])
+  const profile = STATIC_PROFILE
 
   const socialLinks = useMemo(() => {
     if (!profile) return []
