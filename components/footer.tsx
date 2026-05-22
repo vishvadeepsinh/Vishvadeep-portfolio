@@ -40,10 +40,8 @@ export async function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-lg mb-4">{profile?.name || "Vishvadeepsinh"}</h3>
-            <p className="text-sm text-foreground/70">
-              {profile?.title || "Python Developer | Full-Stack Developer | UI/UX Designer"}
-            </p>
+            <h3 className="font-bold text-lg mb-4">{profile.name}</h3>
+            <p className="text-sm text-foreground/70">{profile.title}</p>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Quick Links</h4>

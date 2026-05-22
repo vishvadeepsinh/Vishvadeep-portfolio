@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -25,8 +22,6 @@ const nextConfig = {
     // Reduce image sizes for faster loading
     sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
   },
-  // Enable SWC minification for faster builds
-  swcMinify: true,
   // Enable React Server Components
   reactStrictMode: true,
   // Optimize for production
