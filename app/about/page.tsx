@@ -16,8 +16,7 @@ interface About {
 
 async function getAbout(): Promise<About> {
   try {
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
-    const res = await fetch(`${baseUrl}/api/admin/about`, {
+    const res = await fetch("http://localhost:3000/api/admin/about", {
       next: { revalidate: 3600 },
     })
     if (!res.ok) return {}

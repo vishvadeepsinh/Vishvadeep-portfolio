@@ -25,8 +25,7 @@ function SkillBar({ name, proficiency }: { name: string; proficiency: number }) 
 
 async function getSkills(): Promise<Skill[]> {
   try {
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
-    const res = await fetch(`${baseUrl}/api/admin/skills`, {
+    const res = await fetch("http://localhost:3000/api/admin/skills", {
       next: { revalidate: 3600 },
     })
     if (!res.ok) return []

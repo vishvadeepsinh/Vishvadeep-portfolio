@@ -16,8 +16,7 @@ interface Profile {
 
 async function getProfile(): Promise<Profile> {
   try {
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
-    const res = await fetch(`${baseUrl}/api/admin/profile`, {
+    const res = await fetch("http://localhost:3000/api/admin/profile", {
       next: { revalidate: 3600 },
     })
     if (!res.ok) throw new Error("Failed to fetch profile")
