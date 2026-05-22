@@ -1,5 +1,3 @@
-"use client"
-
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
@@ -8,8 +6,6 @@ import { Button } from "@/components/ui/button"
 import { ExternalLink, Code } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useCachedFetch } from "@/hooks/use-cached-fetch"
 
 interface Project {
   id: number
@@ -22,11 +18,22 @@ interface Project {
   image_url?: string
 }
 
-export default function ProjectsPage() {
-  const { data: projects, loading } = useCachedFetch<Project[]>("/api/admin/projects", {
-    cacheKey: "projects",
-    cacheTTL: 300000, // 5 minutes
-  })
+async function getProjects(): Promise<Project[]> {
+  try {
+    const res = await fetch("http://localhost:3000/api/admin/projects", {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data || []
+  } catch (error) {
+    console.error("[v0] Failed to fetch projects:", error)
+    return []
+  }
+}
+
+export default async function ProjectsPage() {
+  const projects = await getProjects()
 
 
 
@@ -54,23 +61,7 @@ export default function ProjectsPage() {
             </p>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="overflow-hidden">
-                  <Skeleton className="aspect-square w-full" />
-                  <div className="p-6 space-y-4">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-20 w-full" />
-                    <div className="flex gap-2">
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-6 w-20" />
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : !projects || projects.length === 0 ? (
+          {!projects || projects.length === 0 ? (
             <Card className="p-12 text-center">
               <p className="text-foreground/60">No projects found. Add some from the admin dashboard!</p>
             </Card>

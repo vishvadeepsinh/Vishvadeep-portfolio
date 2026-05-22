@@ -1,11 +1,6 @@
-"use client"
-
-import { useMemo } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useCachedFetch } from "@/hooks/use-cached-fetch"
 
 interface Skill {
   id: number
@@ -28,27 +23,36 @@ function SkillBar({ name, proficiency }: { name: string; proficiency: number }) 
   )
 }
 
-export default function SkillsPage() {
-  const { data: skills, loading } = useCachedFetch<Skill[]>("/api/admin/skills", {
-    cacheKey: "skills",
-    cacheTTL: 300000, // 5 minutes
-  })
+async function getSkills(): Promise<Skill[]> {
+  try {
+    const res = await fetch("http://localhost:3000/api/admin/skills", {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data || []
+  } catch (error) {
+    console.error("[v0] Failed to fetch skills:", error)
+    return []
+  }
+}
 
+function groupSkillsByCategory(skills: Skill[]): Record<string, Skill[]> {
+  return skills.reduce(
+    (acc, skill) => {
+      if (!acc[skill.category]) {
+        acc[skill.category] = []
+      }
+      acc[skill.category].push(skill)
+      return acc
+    },
+    {} as Record<string, Skill[]>,
+  )
+}
 
-
-  const skillsByCategory = useMemo(() => {
-    if (!skills) return {}
-    return skills.reduce(
-      (acc, skill) => {
-        if (!acc[skill.category]) {
-          acc[skill.category] = []
-        }
-        acc[skill.category].push(skill)
-        return acc
-      },
-      {} as Record<string, Skill[]>,
-    )
-  }, [skills])
+export default async function SkillsPage() {
+  const skills = await getSkills()
+  const skillsByCategory = groupSkillsByCategory(skills)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -64,23 +68,7 @@ export default function SkillsPage() {
             </p>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="p-6">
-                  <Skeleton className="h-6 w-1/2 mb-6" />
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((j) => (
-                      <div key={j}>
-                        <Skeleton className="h-4 w-full mb-2" />
-                        <Skeleton className="h-2 w-full" />
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : Object.keys(skillsByCategory).length === 0 ? (
+          {Object.keys(skillsByCategory).length === 0 ? (
             <Card className="p-12 text-center">
               <p className="text-foreground/60">No skills found. Add some from the admin dashboard!</p>
             </Card>

@@ -1,81 +1,36 @@
-"use client"
-
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
-import { useState, useEffect, Suspense } from "react"
 import Image from "next/image"
-import dynamic from "next/dynamic"
-import { Code2, Palette, BarChart3 } from "lucide-react" // Import the missing variables
+import WhatIDo from "@/components/home/what-i-do"
+import CTASection from "@/components/home/cta-section"
 
-// Lazy-load heavy components that aren't needed for LCP
-const WhatIDoSection = dynamic(() => import("@/components/home/what-i-do"), {
-  loading: () => null,
-  ssr: true,
-})
+interface Profile {
+  name: string
+  title: string
+  bio: string
+  avatar_url?: string
+}
 
-const CTASection = dynamic(() => import("@/components/home/cta-section"), {
-  loading: () => null,
-  ssr: true,
-})
+async function getProfile(): Promise<Profile> {
+  try {
+    const res = await fetch("http://localhost:3000/api/admin/profile", {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) throw new Error("Failed to fetch profile")
+    const json = await res.json()
+    return json.data || { name: "Portfolio", title: "Developer", bio: "Welcome" }
+  } catch (error) {
+    console.error("[v0] Failed to fetch profile:", error)
+    return { name: "Portfolio", title: "Developer", bio: "Welcome" }
+  }
+}
 
-export default function Home() {
-  const [profileImage, setProfileImage] = useState<string>("")
-  const [profile, setProfile] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    // Optimize: Use AbortController to cancel fetch if component unmounts
-    const controller = new AbortController()
-
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch("/api/admin/profile", {
-          signal: controller.signal,
-          // Performance: Add cache directive
-          next: { revalidate: 3600 },
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const contentType = response.headers.get("content-type")
-        if (!contentType || !contentType.includes("application/json")) {
-          console.error("[v0] Profile fetch error: Non-JSON response received")
-          throw new Error("Invalid response format")
-        }
-
-        const result = await response.json()
-
-        if (result.success && result.data) {
-          setProfile(result.data)
-          if (result.data.avatar_url) {
-            setProfileImage(result.data.avatar_url)
-          }
-        }
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          return // Abort is expected on unmount
-        }
-        console.error("[v0] Failed to fetch profile:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    // Performance: Debounce fetch to avoid multiple calls
-    const timer = setTimeout(() => {
-      fetchProfile()
-    }, 0)
-
-    return () => {
-      clearTimeout(timer)
-      controller.abort()
-    }
-  }, [])
+export default async function Home() {
+  const profile = await getProfile()
+  const profileImage = profile.avatar_url || "/placeholder-user.jpg"
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -87,10 +42,10 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
-                Hi, I'm <span className="text-primary">{profile?.name || "Loading..."}</span>
+                Hi, I'm <span className="text-primary">{profile.name}</span>
               </h1>
-              <p className="text-lg text-foreground/70 mb-8 text-balance">{profile?.title || "Loading..."}</p>
-              <p className="text-base text-foreground/60 mb-8 max-w-lg">{profile?.bio || "Loading..."}</p>
+              <p className="text-lg text-foreground/70 mb-8 text-balance">{profile.title}</p>
+              <p className="text-base text-foreground/60 mb-8 max-w-lg">{profile.bio}</p>
               <div className="flex gap-4">
                 <Link href="/projects">
                   <Button size="lg">
@@ -130,14 +85,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Lazy-load sections below the fold */}
-      <Suspense fallback={null}>
-        <WhatIDoSection />
-      </Suspense>
+      {/* What I Do Section */}
+      <WhatIDo />
 
-      <Suspense fallback={null}>
-        <CTASection />
-      </Suspense>
+      {/* CTA Section */}
+      <CTASection />
 
       <Footer />
     </div>

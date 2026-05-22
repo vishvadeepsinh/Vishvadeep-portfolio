@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     if (!isSupabaseConfigured()) {
       console.warn("[v0] Supabase not configured - returning fallback profile")

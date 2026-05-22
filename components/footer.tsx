@@ -1,87 +1,46 @@
-"use client"
-
 import Link from "next/link"
 import { Github, Linkedin, Mail, Twitter } from "lucide-react"
-import { useState, useEffect, useMemo } from "react"
 
-export function Footer() {
-  const [profile, setProfile] = useState<any>(null)
-  const [isMounted, setIsMounted] = useState(false)
+interface Profile {
+  name: string
+  title: string
+  github_url?: string
+  linkedin_url?: string
+  twitter_url?: string
+  email?: string
+}
 
-  useEffect(() => {
-    // Performance: Only fetch on client side after mounting to avoid hydration issues
-    setIsMounted(true)
-
-    const controller = new AbortController()
-
-    // Performance: Delay footer fetch to prioritize above-the-fold content
-    const timer = setTimeout(async () => {
-      try {
-        const response = await fetch("/api/admin/profile", {
-          signal: controller.signal,
-          next: { revalidate: 3600 },
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const contentType = response.headers.get("content-type")
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Invalid response format")
-        }
-
-        const result = await response.json()
-        if (result.success && result.data) {
-          setProfile(result.data)
-        }
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          return
-        }
-        console.error("[v0] Failed to fetch profile for footer:", error)
-      }
-    }, 1000)
-
-    return () => {
-      clearTimeout(timer)
-      controller.abort()
-    }
-  }, [])
-
-  const socialLinks = useMemo(() => {
-    if (!profile) return []
-
-    const links = []
-    if (profile.github_url) {
-      links.push({ href: profile.github_url, icon: Github, label: "GitHub" })
-    }
-    if (profile.linkedin_url) {
-      links.push({ href: profile.linkedin_url, icon: Linkedin, label: "LinkedIn" })
-    }
-    if (profile.twitter_url) {
-      links.push({ href: profile.twitter_url, icon: Twitter, label: "Twitter" })
-    }
-    if (profile.email) {
-      links.push({ href: `mailto:${profile.email}`, icon: Mail, label: "Email" })
-    }
-    return links
-  }, [profile])
-
-  // Performance: Don't render social links until mounted (avoid hydration mismatch)
-  if (!isMounted) {
-    return null
+async function getProfile(): Promise<Profile> {
+  try {
+    const res = await fetch("http://localhost:3000/api/admin/profile", {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) throw new Error("Failed to fetch profile")
+    const json = await res.json()
+    return json.data || { name: "Portfolio", title: "Developer" }
+  } catch (error) {
+    console.error("[v0] Failed to fetch profile for footer:", error)
+    return { name: "Portfolio", title: "Developer" }
   }
+}
+
+export async function Footer() {
+  const profile = await getProfile()
+
+  const socialLinks = [
+    ...(profile.github_url ? [{ href: profile.github_url, icon: Github, label: "GitHub" }] : []),
+    ...(profile.linkedin_url ? [{ href: profile.linkedin_url, icon: Linkedin, label: "LinkedIn" }] : []),
+    ...(profile.twitter_url ? [{ href: profile.twitter_url, icon: Twitter, label: "Twitter" }] : []),
+    ...(profile.email ? [{ href: `mailto:${profile.email}`, icon: Mail, label: "Email" }] : []),
+  ]
 
   return (
     <footer className="border-t border-border bg-muted/30 py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-lg mb-4">{profile?.name || "Vishvadeepsinh"}</h3>
-            <p className="text-sm text-foreground/70">
-              {profile?.title || "Python Developer | Full-Stack Developer | UI/UX Designer"}
-            </p>
+            <h3 className="font-bold text-lg mb-4">{profile.name}</h3>
+            <p className="text-sm text-foreground/70">{profile.title}</p>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Quick Links</h4>
