@@ -4,6 +4,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Image from "next/image"
+import WhatIDo from "@/components/home/what-i-do"
+import CTASection from "@/components/home/cta-section"
 
 interface Profile {
   name: string
@@ -84,7 +86,11 @@ export default async function Home() {
         </div>
       </section>
 
-        {/* Additional sections */}
+      {/* What I Do Section */}
+      <WhatIDo />
+
+      {/* CTA Section */}
+      <CTASection />
 
       <Footer />
     </div>
