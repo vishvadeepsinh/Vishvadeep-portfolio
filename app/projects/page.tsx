@@ -6,20 +6,47 @@ import { Button } from "@/components/ui/button"
 import { ExternalLink, Code } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { STATIC_PROJECTS } from "@/lib/static-data/projects"
 
-function simplifyUrl(url: string): string {
-  if (!url) return url
+interface Project {
+  id: number
+  title: string
+  description: string
+  technologies: string[]
+  github_url: string
+  live_url: string
+  featured: boolean
+  image_url?: string
+}
+
+async function getProjects(): Promise<Project[]> {
   try {
-    const urlObj = new URL(url)
-    return `${urlObj.origin}${urlObj.pathname}`
-  } catch {
-    return url
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/admin/projects`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data || []
+  } catch (error) {
+    console.error("[v0] Failed to fetch projects:", error)
+    return []
   }
 }
 
-export default function ProjectsPage() {
-  const projects = STATIC_PROJECTS
+export default async function ProjectsPage() {
+  const projects = await getProjects()
+
+
+
+  const simplifyUrl = (url: string): string => {
+    if (!url) return url
+    try {
+      const urlObj = new URL(url)
+      return `${urlObj.origin}${urlObj.pathname}`
+    } catch {
+      return url
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -29,10 +56,17 @@ export default function ProjectsPage() {
         <div className="max-w-6xl mx-auto">
           <div className="mb-12">
             <h1 className="text-4xl font-bold mb-4">Projects</h1>
-            <p className="text-lg text-foreground/70 mb-8">A selection of projects showcasing my expertise in full-stack development, design, and data analysis.</p>
+            <p className="text-lg text-foreground/70">
+              A selection of projects I've built showcasing my skills in full-stack development, UI/UX design, and data
+              analysis.
+            </p>
           </div>
 
-          {projects && projects.length > 0 ? (
+          {!projects || projects.length === 0 ? (
+            <Card className="p-12 text-center">
+              <p className="text-foreground/60">No projects found. Add some from the admin dashboard!</p>
+            </Card>
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {projects.map((project, index) => (
                 <Card key={project.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
@@ -108,10 +142,6 @@ export default function ProjectsPage() {
                 </Card>
               ))}
             </div>
-          ) : (
-            <Card className="p-12 text-center">
-              <p className="text-foreground/60">No projects available.</p>
-            </Card>
           )}
         </div>
       </main>

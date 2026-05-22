@@ -2,15 +2,39 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { STATIC_EXPERIENCE } from "@/lib/static-data/experience"
 
-function formatDate(dateString: string) {
+interface Experience {
+  id: number
+  company: string
+  position: string
+  description: string
+  start_date: string
+  end_date: string | null
+  is_current: boolean
+}
+
+function formatDate(dateString: string): string {
   const date = new Date(dateString)
   return date.toLocaleDateString("en-US", { month: "short", year: "numeric" })
 }
 
-export default function ExperiencePage() {
-  const experiences = STATIC_EXPERIENCE
+async function getExperiences(): Promise<Experience[]> {
+  try {
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/admin/experience`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data || []
+  } catch (error) {
+    console.error("[v0] Failed to fetch experiences:", error)
+    return []
+  }
+}
+
+export default async function ExperiencePage() {
+  const experiences = await getExperiences()
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -25,7 +49,11 @@ export default function ExperiencePage() {
             </p>
           </div>
 
-          {experiences && experiences.length > 0 ? (
+          {!experiences || experiences.length === 0 ? (
+            <Card className="p-12 text-center">
+              <p className="text-foreground/60">No experience found. Add some from the admin dashboard!</p>
+            </Card>
+          ) : (
             <div className="space-y-6">
               {experiences.map((exp) => (
                 <Card key={exp.id} className="p-6 border-l-4 border-l-primary">
@@ -43,10 +71,6 @@ export default function ExperiencePage() {
                 </Card>
               ))}
             </div>
-          ) : (
-            <Card className="p-12 text-center">
-              <p className="text-foreground/60">No experience data available.</p>
-            </Card>
           )}
         </div>
       </main>

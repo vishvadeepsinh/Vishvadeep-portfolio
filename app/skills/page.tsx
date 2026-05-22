@@ -1,7 +1,13 @@
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
-import { STATIC_SKILLS } from "@/lib/static-data/skills"
+
+interface Skill {
+  id: number
+  name: string
+  category: string
+  proficiency: number
+}
 
 function SkillBar({ name, proficiency }: { name: string; proficiency: number }) {
   return (
@@ -17,7 +23,22 @@ function SkillBar({ name, proficiency }: { name: string; proficiency: number }) 
   )
 }
 
-function groupSkillsByCategory(skills: typeof STATIC_SKILLS) {
+async function getSkills(): Promise<Skill[]> {
+  try {
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/admin/skills`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data || []
+  } catch (error) {
+    console.error("[v0] Failed to fetch skills:", error)
+    return []
+  }
+}
+
+function groupSkillsByCategory(skills: Skill[]): Record<string, Skill[]> {
   return skills.reduce(
     (acc, skill) => {
       if (!acc[skill.category]) {
@@ -26,12 +47,12 @@ function groupSkillsByCategory(skills: typeof STATIC_SKILLS) {
       acc[skill.category].push(skill)
       return acc
     },
-    {} as Record<string, typeof STATIC_SKILLS>,
+    {} as Record<string, Skill[]>,
   )
 }
 
-export default function SkillsPage() {
-  const skills = STATIC_SKILLS
+export default async function SkillsPage() {
+  const skills = await getSkills()
   const skillsByCategory = groupSkillsByCategory(skills)
 
   return (
@@ -48,22 +69,22 @@ export default function SkillsPage() {
             </p>
           </div>
 
-          {Object.keys(skillsByCategory).length > 0 ? (
+          {Object.keys(skillsByCategory).length === 0 ? (
+            <Card className="p-12 text-center">
+              <p className="text-foreground/60">No skills found. Add some from the admin dashboard!</p>
+            </Card>
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
                 <Card key={category} className="p-6">
-                  <h3 className="text-xl font-semibold mb-6 capitalize">{category}</h3>
-                  <div className="space-y-4">
+                  <h2 className="text-xl font-semibold mb-6">{category}</h2>
+                  <div>
                     {categorySkills.map((skill) => (
                       <SkillBar key={skill.id} name={skill.name} proficiency={skill.proficiency} />
                     ))}
                   </div>
                 </Card>
               ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-foreground/60">No skills data available.</p>
             </div>
           )}
         </div>

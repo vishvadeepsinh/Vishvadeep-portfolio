@@ -1,9 +1,32 @@
 import Link from "next/link"
 import { Github, Linkedin, Mail, Twitter } from "lucide-react"
-import { STATIC_PROFILE } from "@/lib/static-data/profile"
 
-export function Footer() {
-  const profile = STATIC_PROFILE
+interface Profile {
+  name: string
+  title: string
+  github_url?: string
+  linkedin_url?: string
+  twitter_url?: string
+  email?: string
+}
+
+async function getProfile(): Promise<Profile> {
+  try {
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/admin/profile`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) throw new Error("Failed to fetch profile")
+    const json = await res.json()
+    return json.data || { name: "Portfolio", title: "Developer" }
+  } catch (error) {
+    console.error("[v0] Failed to fetch profile for footer:", error)
+    return { name: "Portfolio", title: "Developer" }
+  }
+}
+
+export async function Footer() {
+  const profile = await getProfile()
 
   const socialLinks = [
     ...(profile.github_url ? [{ href: profile.github_url, icon: Github, label: "GitHub" }] : []),
@@ -17,8 +40,10 @@ export function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-lg mb-4">{profile.name}</h3>
-            <p className="text-sm text-foreground/70">{profile.title}</p>
+            <h3 className="font-bold text-lg mb-4">{profile?.name || "Vishvadeepsinh"}</h3>
+            <p className="text-sm text-foreground/70">
+              {profile?.title || "Python Developer | Full-Stack Developer | UI/UX Designer"}
+            </p>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Quick Links</h4>
@@ -59,7 +84,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-border pt-8 text-center text-sm text-foreground/70">
-          <p>&copy; 2025 {profile.name}. All rights reserved.</p>
+          <p>&copy; 2025 {profile?.name || "Vishvadeepsinh Chudasama"}. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -1,11 +1,36 @@
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
-import { STATIC_ABOUT, STATIC_PROFILE } from "@/lib/static-data/profile"
+import { Badge } from "@/components/ui/badge"
 
-export default function AboutPage() {
-  const about = STATIC_ABOUT
-  const profile = STATIC_PROFILE
+interface About {
+  title?: string
+  intro?: string
+  description?: string
+  location?: string
+  experience_years?: string
+  education?: string
+  languages?: string[]
+  what_drives_me?: string[]
+}
+
+async function getAbout(): Promise<About> {
+  try {
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/admin/about`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return {}
+    const json = await res.json()
+    return json.data || {}
+  } catch (error) {
+    console.error("[v0] Failed to fetch about:", error)
+    return {}
+  }
+}
+
+export default async function AboutPage() {
+  const about = await getAbout()
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -14,13 +39,14 @@ export default function AboutPage() {
       <main className="flex-1 py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-12">
-            <h1 className="text-4xl font-bold mb-4">{about.heading}</h1>
+            <h1 className="text-4xl font-bold mb-4">{about?.title || "About Me"}</h1>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <Card className="p-6 md:col-span-2">
               <h2 className="text-2xl font-semibold mb-4">Who I Am</h2>
-              <p className="text-foreground/70">{about.content}</p>
+              <p className="text-foreground/70 mb-4">{about?.intro}</p>
+              <p className="text-foreground/70">{about?.description}</p>
             </Card>
 
             <Card className="p-6">
@@ -28,46 +54,42 @@ export default function AboutPage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-foreground/60">Location</p>
-                  <p className="font-medium">{profile.location}</p>
+                  <p className="font-medium">{about?.location || "Not specified"}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-foreground/60">Email</p>
-                  <p className="font-medium">{profile.email}</p>
+                  <p className="text-sm text-foreground/60">Experience</p>
+                  <p className="font-medium">{about?.experience_years || "Not specified"}</p>
                 </div>
+                <div>
+                  <p className="text-sm text-foreground/60">Education</p>
+                  <p className="font-medium">{about?.education || "Not specified"}</p>
+                </div>
+                {about?.languages && about.languages.length > 0 && (
+                  <div>
+                    <p className="text-sm text-foreground/60">Languages</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {about.languages.map((lang: string, index: number) => (
+                        <Badge key={index}>{lang}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
 
-          {about.key_highlights && about.key_highlights.length > 0 && (
-            <div className="mb-12">
-              <h3 className="text-2xl font-semibold mb-6">Key Highlights</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {about.key_highlights.map((highlight, idx) => (
-                  <Card key={idx} className="p-6">
-                    <p className="text-foreground/70">{highlight}</p>
-                  </Card>
+          {about?.what_drives_me && about.what_drives_me.length > 0 && (
+            <Card className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">What Drives Me</h2>
+              <ul className="space-y-3 text-foreground/70">
+                {about.what_drives_me.map((item: string, index: number) => (
+                  <li key={index} className="flex gap-3">
+                    <span className="text-primary">✓</span>
+                    <span>{item}</span>
+                  </li>
                 ))}
-              </div>
-            </div>
-          )}
-                  </div>
-                </Card>
-              </div>
-
-              {about?.what_drives_me && about.what_drives_me.length > 0 && (
-                <Card className="p-6">
-                  <h2 className="text-2xl font-semibold mb-4">What Drives Me</h2>
-                  <ul className="space-y-3 text-foreground/70">
-                    {about.what_drives_me.map((item: string, index: number) => (
-                      <li key={index} className="flex gap-3">
-                        <span className="text-primary">✓</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
-              )}
-            </>
+              </ul>
+            </Card>
           )}
         </div>
       </main>
