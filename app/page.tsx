@@ -16,7 +16,7 @@ interface Profile {
 
 async function getProfile(): Promise<Profile> {
   try {
-    const res = await fetch("http://localhost:3000/api/admin/profile", {
+    const res = await fetch("/api/admin/profile", {
       next: { revalidate: 3600 },
     })
     if (!res.ok) throw new Error("Failed to fetch profile")

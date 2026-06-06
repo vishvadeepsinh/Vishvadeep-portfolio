@@ -16,7 +16,7 @@ interface About {
 
 async function getAbout(): Promise<About> {
   try {
-    const res = await fetch("http://localhost:3000/api/admin/about", {
+    const res = await fetch("/api/admin/about", {
       next: { revalidate: 3600 },
     })
     if (!res.ok) return {}

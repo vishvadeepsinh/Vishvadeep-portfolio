@@ -25,7 +25,7 @@ function SkillBar({ name, proficiency }: { name: string; proficiency: number }) 
 
 async function getSkills(): Promise<Skill[]> {
   try {
-    const res = await fetch("http://localhost:3000/api/admin/skills", {
+    const res = await fetch("/api/admin/skills", {
       next: { revalidate: 3600 },
     })
     if (!res.ok) return []

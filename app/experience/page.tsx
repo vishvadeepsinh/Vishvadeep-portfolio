@@ -20,7 +20,7 @@ function formatDate(dateString: string): string {
 
 async function getExperiences(): Promise<Experience[]> {
   try {
-    const res = await fetch("http://localhost:3000/api/admin/experience", {
+    const res = await fetch("/api/admin/experience", {
       next: { revalidate: 3600 },
     })
     if (!res.ok) return []

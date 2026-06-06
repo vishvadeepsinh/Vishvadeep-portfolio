@@ -20,7 +20,7 @@ interface Project {
 
 async function getProjects(): Promise<Project[]> {
   try {
-    const res = await fetch("http://localhost:3000/api/admin/projects", {
+    const res = await fetch("/api/admin/projects", {
       next: { revalidate: 3600 },
     })
     if (!res.ok) return []
