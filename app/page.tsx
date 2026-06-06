@@ -87,10 +87,10 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
-                Hi, I'm <span className="text-primary">{profile?.name || "Loading..."}</span>
+                Hi, I'm <span className="text-primary">{profile?.name || "Vishvadeepsinh Chudasama"}</span>
               </h1>
-              <p className="text-lg text-foreground/70 mb-8 text-balance">{profile?.title || "Loading..."}</p>
-              <p className="text-base text-foreground/60 mb-8 max-w-lg">{profile?.bio || "Loading..."}</p>
+              <p className="text-lg text-foreground/70 mb-8 text-balance">{profile?.title || "CS graduate and Google AI-certified developer with experience building AI automation tools, e-commerce content systems, and full-stack web apps."}</p>
+              <p className="text-base text-foreground/60 mb-8 max-w-lg">{profile?.bio || "Currently pursuing an MBA (Operations Management)."}</p>
               <div className="flex gap-4">
                 <Link href="/projects">
                   <Button size="lg">
